@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+rootProject.name = 'qdex-sonatype-publisher'
+
+include 'qdex-sonatype-publisher-plugin'
+include 'qdex-sonatype-publisher-example'
+

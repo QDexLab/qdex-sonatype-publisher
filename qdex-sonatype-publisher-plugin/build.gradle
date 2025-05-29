@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'com.gradle.plugin-publish' version '1.3.1'
+}
+
+gradlePlugin {
+    website = 'https://github.com/QDexLab/qdex-sonatype-publisher'
+    vcsUrl = 'https://github.com/QDexLab/qdex-sonatype-publisher'
+    plugins {
+        greetingsPlugin {
+            id = 'io.github.qdexlab.greeting'
+            implementationClass = 'io.github.qdexlab.sonatypePublisher.plugin.GreetingPlugin'
+            displayName = 'Gradle Greeting plugin'
+            description = 'Gradle plugin to say hello!'
+            tags.set(['search', 'tags', 'for', 'your', 'hello'])
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
+}
