@@ -1,6 +1,42 @@
 plugins {
     id 'java'
-    id "io.github.qdexlab.greeting" version "1.0.0"
+    id "io.github.qdexlab.sonatypePublisher" version "1.0.0"
+}
+
+
+publishSonatype {
+    pom {
+        name = 'pom_name'
+        description = 'pom_description'
+        url = 'pom_url'
+        scm {
+            connection = 'scm:connection'
+            developerConnection = 'scm:developerConnection'
+            url = 'scm:url'
+        }
+        licenses {
+            license1 {
+                licenseName = 'license1'
+                licenseUrl = 'https://spdx.org/licenses/license1.html'
+            }
+            license2 {
+                licenseName = 'license2'
+                licenseUrl = 'https://spdx.org/licenses/license2.html'
+            }
+        }
+        developers {
+            developer1 {
+                developerId = 'developerId1'
+                developerName = 'developerName1'
+                developerEmail = 'developerEmail1'
+            }
+            developer2 {
+                developerId = 'developerId2'
+                developerName = 'developerName2'
+                developerEmail = 'developerEmail2'
+            }
+        }
+    }
 }
 
 dependencies {

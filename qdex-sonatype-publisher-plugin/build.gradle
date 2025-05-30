@@ -7,12 +7,12 @@ gradlePlugin {
     website = 'https://github.com/QDexLab/qdex-sonatype-publisher'
     vcsUrl = 'https://github.com/QDexLab/qdex-sonatype-publisher'
     plugins {
-        greetingsPlugin {
-            id = 'io.github.qdexlab.greeting'
-            implementationClass = 'io.github.qdexlab.sonatypePublisher.plugin.GreetingPlugin'
-            displayName = 'Gradle Greeting plugin'
-            description = 'Gradle plugin to say hello!'
-            tags.set(['search', 'tags', 'for', 'your', 'hello'])
+        publisherPlugin {
+            id = 'io.github.qdexlab.sonatypePublisher'
+            implementationClass = 'io.github.qdexlab.sonatypePublisher.plugin.PublishSonatypePlugin'
+            displayName = 'Gradle Sonatype Publisher'
+            description = 'Gradle plugin to publish to sonatype!'
+            tags.set(['maven', 'sonatype', 'publish'])
         }
     }
 }
