@@ -5,6 +5,14 @@ plugins {
 
 
 publishSonatype {
+    sonatype {
+        username = project.property("qdex.sonatype.username")
+        password = project.property("qdex.sonatype.password")
+    }
+    signing {
+        secretKey = project.property("qdex.signing.secretKey")
+        password = project.property("qdex.signing.password")
+    }
     pom {
         name = 'pom_name'
         description = 'pom_description'

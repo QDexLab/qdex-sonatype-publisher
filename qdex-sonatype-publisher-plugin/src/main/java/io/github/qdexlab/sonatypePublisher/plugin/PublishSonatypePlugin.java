@@ -5,9 +5,14 @@ import io.github.qdexlab.sonatypePublisher.plugin.ext.License;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.Pom;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.PublishSonatypeExtension;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.Scm;
+import io.github.qdexlab.sonatypePublisher.plugin.ext.Signing;
+import io.github.qdexlab.sonatypePublisher.plugin.ext.Sonatype;
+import io.github.qdexlab.sonatypePublisher.plugin.utils.SonatypeApi;
+import io.github.qdexlab.sonatypePublisher.plugin.utils.ZipUtils;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.PluginManager;
@@ -19,9 +24,12 @@ import org.gradle.external.javadoc.StandardJavadocDocletOptions;
 import org.gradle.plugins.signing.SigningExtension;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Objects;
 
 public class PublishSonatypePlugin implements Plugin<Project> {
+    private static final String TASK_GROUP = "qdex sonatype publisher";
     @Override
     public void apply(Project project) {
         applyPlugin(project, "java");
@@ -37,14 +45,38 @@ public class PublishSonatypePlugin implements Plugin<Project> {
             configureSigningExtension(project);
             configureJavadocTask(project);
 
-            project.getTasks().register("bundleProducts", task -> {
-                task.setGroup("qdex-sonatype-publisher");
-                task.dependsOn("publish");
-            });
-            project.getTasks().register("uploadSonatype", task -> {
-                task.setGroup("qdex-sonatype-publisher");
+            project.getTasks().register("publishSonatype", task -> {
+                task.setGroup(TASK_GROUP);
+                task.dependsOn("clean", "publish");
+                task.doLast(this::doPublish);
             });
         });
+    }
+
+    private void doPublish(Task task) {
+        Project project = task.getProject();
+        File zip = doCompress(project);
+        doUpload(project, zip);
+    }
+
+    private void doUpload(Project project, File zip) {
+        PublishSonatypeExtension extension = getPublishConfigExtension(project);
+        Sonatype sonatype = extension.getSonatype();
+        new SonatypeApi(sonatype, project.getLogger()).upload(zip);
+    }
+
+    private File doCompress(Project project) {
+        File outputDir = getPublishOutputDir(project);
+        // has and only has one sub dir
+        File sourceFile = Objects.requireNonNull(outputDir.listFiles())[0];
+        String zipFileName = project.getName() + "-" + project.getVersion();
+        File zipFile = new File(outputDir.getPath() + "/" + zipFileName + ".zip");
+        try {
+            ZipUtils.zipDirectory(sourceFile, zipFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return zipFile;
     }
 
     private void configureJavadocTask(Project project) {
@@ -58,9 +90,11 @@ public class PublishSonatypePlugin implements Plugin<Project> {
 
     private void configureSigningExtension(Project project) {
         project.getExtensions().configure(SigningExtension.class, signing -> {
-            signing.useGpgCmd();
+            // signing.useGpgCmd();
+            Signing signingExt = getPublishConfigExtension(project).getSigning();
+            signing.useInMemoryPgpKeys(signingExt.getSecretKey(), signingExt.getPassword());
             PublishingExtension publishing = project.getExtensions().getByType(PublishingExtension.class);
-            signing.sign(publishing.getPublications().getByName("mavenJava"));
+            signing.sign(publishing.getPublications().getByName("mavenJava"))
         });
     }
 
@@ -80,10 +114,7 @@ public class PublishSonatypePlugin implements Plugin<Project> {
                 repositories.mavenLocal();
                 // 项目目录（示例）
                 repositories.maven(maven -> {
-                    String version = (String) project.getVersion();
-                    Provider<Directory> releases = project.getLayout().getBuildDirectory().dir("repos/releases");
-                    Provider<Directory> snapshots = project.getLayout().getBuildDirectory().dir("repos/snapshots");
-                    File file = version.endsWith("SNAPSHOT") ? snapshots.get().getAsFile() : releases.get().getAsFile();
+                    File file = getPublishOutputDir(project);
                     try {
                         maven.setUrl(file.toURI().toURL());
                     } catch (MalformedURLException e) {
@@ -132,6 +163,13 @@ public class PublishSonatypePlugin implements Plugin<Project> {
                 });
             });
         });
+    }
+
+    private static File getPublishOutputDir(Project project) {
+        String version = (String) project.getVersion();
+        Provider<Directory> releases = project.getLayout().getBuildDirectory().dir("repos/releases");
+        Provider<Directory> snapshots = project.getLayout().getBuildDirectory().dir("repos/snapshots");
+        return version.endsWith("SNAPSHOT") ? snapshots.get().getAsFile() : releases.get().getAsFile();
     }
 
     private PublishSonatypeExtension getPublishConfigExtension(Project project) {
