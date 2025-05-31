@@ -16,19 +16,11 @@ QDex Sonatype Publisher 是一个简化发布流程的 Gradle 插件，帮助开
 
 ### 添加插件依赖
 
-在项目的 `build.gradle` 或 `build.gradle.kts` 文件中添加插件：
+在项目的 `build.gradle` 文件中添加插件：
 
 ```groovy
 plugins {
     id "io.github.qdexlab.sonatypePublisher" version "1.0.0"
-}
-```
-
-或
-
-```kotlin
-plugins {
-    id("io.github.qdexlab.sonatypePublisher") version "1.0.0"
 }
 ```
 
