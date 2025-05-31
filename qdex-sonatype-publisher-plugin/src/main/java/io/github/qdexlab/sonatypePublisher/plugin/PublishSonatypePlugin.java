@@ -7,6 +7,7 @@ import io.github.qdexlab.sonatypePublisher.plugin.ext.PublishSonatypeExtension;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.Scm;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.Signing;
 import io.github.qdexlab.sonatypePublisher.plugin.ext.Sonatype;
+import io.github.qdexlab.sonatypePublisher.plugin.utils.ObjectUtils;
 import io.github.qdexlab.sonatypePublisher.plugin.utils.SonatypeApi;
 import io.github.qdexlab.sonatypePublisher.plugin.utils.ZipUtils;
 import org.gradle.api.JavaVersion;
@@ -30,6 +31,11 @@ import java.util.Objects;
 
 public class PublishSonatypePlugin implements Plugin<Project> {
     private static final String TASK_GROUP = "qdex sonatype publisher";
+    private static final String PROPERTY_SIGNING_SECRET_KEY = "qdex.signing.secretKey";
+    private static final String PROPERTY_SIGNING_PASSWORD = "qdex.signing.password";
+    private static final String PROPERTY_SONATYPE_USERNAME = "qdex.sonatype.username";
+    private static final String PROPERTY_SONATYPE_PASSWORD = "qdex.sonatype.password";
+
     @Override
     public void apply(Project project) {
         applyPlugin(project, "java");
@@ -62,7 +68,9 @@ public class PublishSonatypePlugin implements Plugin<Project> {
     private void doUpload(Project project, File zip) {
         PublishSonatypeExtension extension = getPublishConfigExtension(project);
         Sonatype sonatype = extension.getSonatype();
-        new SonatypeApi(sonatype, project.getLogger()).upload(zip);
+        String username = ObjectUtils.defaultIfNull(sonatype.getUsername(), (String) project.property(PROPERTY_SONATYPE_USERNAME));
+        String password = ObjectUtils.defaultIfNull(sonatype.getPassword(), (String) project.property(PROPERTY_SONATYPE_PASSWORD));
+        new SonatypeApi(username, password, project.getLogger()).upload(zip);
     }
 
     private File doCompress(Project project) {
@@ -92,9 +100,11 @@ public class PublishSonatypePlugin implements Plugin<Project> {
         project.getExtensions().configure(SigningExtension.class, signing -> {
             // signing.useGpgCmd();
             Signing signingExt = getPublishConfigExtension(project).getSigning();
-            signing.useInMemoryPgpKeys(signingExt.getSecretKey(), signingExt.getPassword());
+            String secretKey = ObjectUtils.defaultIfNull(signingExt.getSecretKey(), (String) project.property(PROPERTY_SIGNING_SECRET_KEY));
+            String password = ObjectUtils.defaultIfNull(signingExt.getPassword(), (String) project.property(PROPERTY_SIGNING_PASSWORD));
+            signing.useInMemoryPgpKeys(secretKey, password);
             PublishingExtension publishing = project.getExtensions().getByType(PublishingExtension.class);
-            signing.sign(publishing.getPublications().getByName("mavenJava"))
+            signing.sign(publishing.getPublications().getByName("mavenJava"));
         });
     }
 

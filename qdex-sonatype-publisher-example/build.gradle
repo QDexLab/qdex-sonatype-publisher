@@ -6,12 +6,12 @@ plugins {
 
 publishSonatype {
     sonatype {
-        username = project.property("qdex.sonatype.username")
-        password = project.property("qdex.sonatype.password")
+        username = System.getenv("qdex.sonatype.username")
+        password = System.getenv("qdex.sonatype.password")
     }
     signing {
-        secretKey = project.property("qdex.signing.secretKey")
-        password = project.property("qdex.signing.password")
+        secretKey = System.getenv("qdex.signing.secretKey")
+        password = System.getenv("qdex.signing.password")
     }
     pom {
         name = 'pom_name'

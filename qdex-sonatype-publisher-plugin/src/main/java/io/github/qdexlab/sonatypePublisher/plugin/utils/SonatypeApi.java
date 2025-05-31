@@ -8,7 +8,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
-import io.github.qdexlab.sonatypePublisher.plugin.ext.Sonatype;
 import org.gradle.api.logging.Logger;
 
 import java.io.File;
@@ -21,9 +20,7 @@ public class SonatypeApi {
     private final String authorization;
     private final Logger logger;
 
-    public SonatypeApi(Sonatype sonatype, Logger logger) {
-        String username = sonatype.getUsername();
-        String password = sonatype.getPassword();
+    public SonatypeApi(String username, String password, Logger logger) {
         this.authorization = "Bearer " +
                 new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
         this.logger = logger;
