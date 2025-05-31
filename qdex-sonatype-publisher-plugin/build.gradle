@@ -18,7 +18,7 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 tasks.withType(JavaCompile) {
