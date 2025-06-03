@@ -57,7 +57,7 @@ publishSonatype {
             developer1 {
                 developerId = 'QDexLab'
                 developerName = 'QDexLab'
-                developerEmail = 'xdqnd2012@163.com'
+                developerEmail = 'xxx@163.com'
             }
         }
     }
